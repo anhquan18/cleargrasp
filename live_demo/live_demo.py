@@ -21,6 +21,7 @@ from PIL import Image
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from api import utils, depth_completion_api
+import pyrealsense2 as rs
 from realsense import camera
 
 
@@ -32,13 +33,46 @@ if __name__ == '__main__':
 
     # Initialize Camera
     print('Running live demo of depth completion. Make sure realsense camera is streaming.\n')
-    rcamera = camera.Camera()
-    camera_intrinsics = rcamera.color_intr
-    realsense_fx = camera_intrinsics[0, 0]
-    realsense_fy = camera_intrinsics[1, 1]
-    realsense_cx = camera_intrinsics[0, 2]
-    realsense_cy = camera_intrinsics[1, 2]
-    time.sleep(1)  # Give camera some time to load data
+    conf = rs.config()
+    # RGB
+    conf.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+    conf.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+
+    # stream with pyrealsense2
+    pipe = rs.pipeline()
+    profile = pipe.start(conf)
+    cnt = 0
+
+    #try:
+    #    while True:
+    #        frames = pipe.wait_for_frames()
+
+    #        # frame
+    #        color_frame = frames.get_color_frame()
+    #        depth_frame = frames.get_depth_frame()
+
+    #        color_image = np.asanyarray(color_frame.get_data())
+    #        depth_image = np.asanyarray(depth_frame.get_data())
+
+    #        depth_color_frame = rs.colorizer().colorize(depth_frame)
+    #        depth_color_image = np.asanyarray(depth_color_frame.get_data())
+    #        print("depth image shape:", depth_image.shape)
+
+    #        cv2.imshow("color", color_image)
+    #        cv2.imshow("depth", depth_image)
+    #        cv2.waitKey(0)
+    #    
+    #finally:
+    #    pipe.stop()
+
+
+    #rcamera = camera.Camera()
+    #camera_intrinsics = rcamera.color_intr
+    #realsense_fx = camera_intrinsics[0, 0]
+    #realsense_fy = camera_intrinsics[1, 1]
+    #realsense_cx = camera_intrinsics[0, 2]
+    #realsense_cy = camera_intrinsics[1, 2]
+    #time.sleep(1)  # Give camera some time to load data
 
     # Load Config File
     CONFIG_FILE_PATH = args.configFile
@@ -95,8 +129,15 @@ if __name__ == '__main__':
     capture_num = 0
     while True:
         # Get Frame. Expected format: ColorImg -> (H, W, 3) uint8, DepthImg -> (H, W) float64
-        color_img, input_depth = rcamera.get_data()
-        input_depth = input_depth.astype(np.float32)
+        #color_img, input_depth = rcamera.get_data()
+        #input_depth = input_depth.astype(np.float32)
+        # pyrealsense2 get frame
+        frames = pipe.wait_for_frames()
+        color_frame = frames.get_color_frame()
+        depth_frame = frames.get_depth_frame()
+
+        color_img = np.asanyarray(color_frame.get_data())
+        input_depth = np.asanyarray(depth_frame.get_data()).astype(np.float32)
 
         try:
             output_depth, filtered_output_depth = depthcomplete.depth_completion(

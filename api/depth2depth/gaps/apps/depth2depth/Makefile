@@ -25,8 +25,8 @@ NAME=depth2depth
 #USER_LIBS = -L/usr/lib/x86_64-linux-gnu/ -lhdf5_serial
 #USER_CFLAGS=-DRN_USE_CSPARSE /usr/lib/x86_64-linux-gnu/
 
-USER_LIBS=-L/usr/include/hdf5/serial/ -lhdf5_serial
-USER_CFLAGS=-DRN_USE_CSPARSE "/usr/include/hdf5/serial/"
+USER_LIBS=-L/usr/include/hdf5/serial/hdf5.h -lhdf5_serial
+USER_CFLAGS=-DRN_USE_CSPARSE "/usr/include/hdf5/serial/hdf5.h"
 
 
 #
